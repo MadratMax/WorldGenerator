@@ -2,13 +2,14 @@ package root;
 
 import java.awt.image.BufferedImage;
 
-public class Sprite {
+public class Sprite implements ISprite {
 
     private EntityModel entityModel;
     private BufferedImage sprite;
     private int type;
     private int x;
     private int y;
+    private int areaIndex = -1;
 
     public Sprite(EntityModel model, int type, BufferedImage image) {
         this.entityModel = model;
@@ -25,6 +26,14 @@ public class Sprite {
     public void addCoordinates(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public void setLocation(int areaIndex) {
+        this.areaIndex = areaIndex;
+    }
+
+    public int getLocation() {
+        return areaIndex;
     }
 
     public BufferedImage getImage() {

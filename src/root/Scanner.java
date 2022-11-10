@@ -1,6 +1,5 @@
 package root;
 
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -10,7 +9,7 @@ public class Scanner {
 
     private int pieces = 100;
     private LandArea [] landBlocks;
-    private Model landModel;
+    private ILandModel landModel;
     private SpriteObjectsMap spriteObjectsMap;
     private boolean scanTrees;
     private boolean scanLakes;
@@ -23,8 +22,11 @@ public class Scanner {
     ArrayList<Sprite> comObjSprites = null;
     private LandArea lastScannedArea;
     private ArrayList<Sprite> stumpSprites = null;
+    private int woodcutterLandAreaIndex;
+    private boolean scanCharacter;
+    private boolean woodcutterFound;
 
-    public Scanner(Model landModel, LandArea [] landBlocks) {
+    public Scanner(ILandModel landModel, LandArea [] landBlocks) {
         this.landModel = landModel;
         this.spriteObjectsMap = landModel.getSpritesMap();
         this.landBlocks = landBlocks;
@@ -41,6 +43,14 @@ public class Scanner {
         Logger.printLog("lakes: " + lastScannedArea.lakes().size());
         //Logger.printLog("rivers: " + lastScannedArea.());
         Logger.printLog("com objects: " + lastScannedArea.commonObjects().size());
+    }
+
+    public boolean woodcutterFound() {
+        return woodcutterFound;
+    }
+
+    public int woodcutterLandIndex() {
+        return woodcutterLandAreaIndex;
     }
 
     private LandArea[] splitAreaToBlocks(LandArea landArea) {
@@ -204,7 +214,39 @@ public class Scanner {
         if (entityModel.equals(EntityModel.COMMON_OBJ)) {
             scanComObj = true;
         }
+        if (entityModel.equals(EntityModel.CHARACTER)) {
+            scanCharacter = true;
+        }
 
+        return this;
+    }
+
+    public Scanner scanWoodcutter() {
+
+        woodcutterFound = false;
+        woodcutterLandAreaIndex = -1;
+
+        for (LandArea area: landBlocks) {
+            if (area == null) {
+                return this;
+            }
+            try {
+                long startTime = System.currentTimeMillis();
+                printProgress("scanning area " + area.getIndex(), startTime, (long) landBlocks.length, Arrays.asList(landBlocks).indexOf(area)+1);
+            } catch (IllegalArgumentException e) {
+            }
+            Thread t1 = new Thread(defineWoodcutterArea(Arrays.asList(landBlocks).indexOf(area)));
+            t1.start();
+
+            if (woodcutterFound) {
+                //Logger.printLog("woodcutter found here: area-" + area.getIndex());
+                woodcutterLandAreaIndex = area.getIndex();
+                return this;
+            }
+        }
+
+        //Thread t1 = new Thread(scanFullLand());
+        //t1.start();
         return this;
     }
 
@@ -212,6 +254,9 @@ public class Scanner {
         //Arrays.stream(landAreas).parallel().forEach(landArea -> scanArea(landArea));
 
         //scan(landAreas);
+
+        woodcutterFound = false;
+        woodcutterLandAreaIndex = -1;
 
         for (LandArea area: landBlocks) {
             if (area == null) {
@@ -226,6 +271,11 @@ public class Scanner {
             Thread t1 = new Thread(scanArea(Arrays.asList(landBlocks).indexOf(area)));
             //Arrays.stream(splitAreaToBlocks(area)).parallel().forEach(block -> scanArea(block.getIndex()));
             t1.start();
+
+            if (scanCharacter && woodcutterFound) {
+                Logger.printLog("woodcutter found here: area-" + area.getIndex());
+                return this;
+            }
         }
 
         //Thread t1 = new Thread(scanFullLand());
@@ -236,7 +286,8 @@ public class Scanner {
     public Scanner scan(LandArea[] landAreasArray) {
         //Arrays.stream(landAreas).parallel().forEach(landArea -> scanArea(landArea));
 
-
+        woodcutterFound = false;
+        woodcutterLandAreaIndex = -1;
 
         for (LandArea area:landAreasArray) {
             if (area == null) {
@@ -254,6 +305,10 @@ public class Scanner {
                 Thread t1 = new Thread(scanArea(Arrays.asList(blocks).indexOf(block)));
                 //Arrays.stream(splitAreaToBlocks(area)).parallel().forEach(block -> scanArea(block.getIndex()));
                 t1.start();
+                if (scanCharacter && woodcutterFound) {
+                    Logger.printLog("woodcutter found here: area-" + block.getIndex());
+                    return this;
+                }
             }
         }
 
@@ -344,22 +399,20 @@ public class Scanner {
 
         //for (LandArea landAreaBlock : splitAreaToBlocks(landArea)) {
 
-
-            for (int x = landArea.StartX(); x < landArea.EndX(); x++) {
-                for (int y = landArea.StartY(); y < landArea.EndY(); y++) {
-                    try {
-                        //long startTime = System.currentTimeMillis();
-                        //printProgress("scanning area " + areaIndex, startTime, (long) landArea.EndX()-1, x);
-                    } catch (IllegalArgumentException e) {
-                    }
-                    int color = landModel.getImage().getRGB(landArea.StartX(), landArea.StartY());
-                    int alpha = (color >> 24) & 0xFF;
-                    if (alpha != 0) {
-                        defineSprites(landArea, x, y);
-                    }
+        for (int x = landArea.StartX(); x <= landArea.EndX(); x++) {
+            for (int y = landArea.StartY(); y <= landArea.EndY(); y++) {
+                try {
+                    //long startTime = System.currentTimeMillis();
+                    //printProgress("scanning area " + areaIndex, startTime, (long) landArea.EndX()-1, x);
+                } catch (IllegalArgumentException e) {
+                }
+                int color = landModel.getImage().getRGB(landArea.StartX(), landArea.StartY());
+                int alpha = (color >> 24) & 0xFF;
+                if (alpha != 0) {
+                    defineSprites(landArea, x, y);
                 }
             }
-
+        }
             //counter++;
             //scanArea(splitAreaToBlocks(landArea)[landArea.getIndex()+1]);
         //}
@@ -420,6 +473,13 @@ public class Scanner {
 
     private String defineSprites(LandArea landArea, int x, int y) {
         Sprite found = spriteObjectsMap.getSpriteByCoordinates(x, y);
+        if (landModel.getSprite(EntityModel.CHARACTER) != null &&
+                landModel.getSprite(EntityModel.CHARACTER).getX() == x &&
+                landModel.getSprite(EntityModel.CHARACTER).getY() == y) {
+            woodcutterFound = true;
+            woodcutterLandAreaIndex = landArea.getIndex();
+            landModel.getSprite(EntityModel.CHARACTER).setLocation(landArea.getIndex());
+        }
         if (found != null) {
             if (found.getEntityModel().equals(EntityModel.TREE)) {
                 if (treeSprites == null) {
@@ -453,6 +513,21 @@ public class Scanner {
             }
 
             lastScannedArea = landArea;
+        }
+
+        return "";
+    }
+
+    private String defineWoodcutterArea(int areaIndex) {
+        LandArea block = landBlocks[areaIndex];
+
+        Sprite woodcutter =landModel.getSprite(EntityModel.CHARACTER);
+        if (woodcutter != null &&
+            (woodcutter.getX() >= block.StartX() && woodcutter.getX() < block.EndX()) &&
+                (woodcutter.getY() >= block.StartY() && woodcutter.getY() < block.EndY())) {
+            woodcutterFound = true;
+            woodcutterLandAreaIndex = block.getIndex();
+            landModel.getSprite(EntityModel.CHARACTER).setLocation(block.getIndex());
         }
 
         return "";

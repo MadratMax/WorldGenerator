@@ -2,11 +2,11 @@ package root;
 
 public class LandSplitter {
 
-    private Model landModel;
+    private ILandModel landModel;
     private int maxBlocks;
     private LandArea[] landBlocks;
 
-    public LandSplitter(Model landModel, int maxBlocks) {
+    public LandSplitter(ILandModel landModel, int maxBlocks) {
         this.landModel = landModel;
         this.maxBlocks = maxBlocks;
         this.landBlocks = new LandArea [maxBlocks*2];
@@ -16,7 +16,7 @@ public class LandSplitter {
         return splitAreaToBlocks(landModel);
     }
 
-    private LandArea[] splitAreaToBlocks(Model landModel) {
+    private LandArea[] splitAreaToBlocks(ILandModel landModel) {
         int widthStep = Math.abs((landModel.getWidth() / 20));
         int heightStep = Math.abs((landModel.getHeight() / 20));
 
@@ -38,7 +38,7 @@ public class LandSplitter {
 
             blockCounter++;
 
-            if (lastStartX + landBlocks[i].Width() >= landModel.getWidth()) {
+            if (lastStartX + landBlocks[i].Width() > landModel.getWidth()) {
                 landBlocks[i].SetWidth(landModel.getWidth() - lastStartX);
 
                 if (lastRow) {
@@ -57,7 +57,7 @@ public class LandSplitter {
             } else {
                 lastStartX = lastStartX + widthStep + 1;
             }
-            if (lastStartY + landBlocks[i].Height() >= landModel.getHeight()) {
+            if (lastStartY + landBlocks[i].Height() > landModel.getHeight()) {
                 heightStep = landModel.getHeight() - lastStartY;
                 landBlocks[i].SetHeight(heightStep);
                 lastRow = true;

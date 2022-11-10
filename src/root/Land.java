@@ -2,8 +2,9 @@ package root;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.stream.Stream;
 
-public class Land implements Model {
+public class Land implements ILandModel {
 
     private final BufferedImage image;
     private Graphics2D land2D;
@@ -12,6 +13,7 @@ public class Land implements Model {
     private final int height;
     private Color backGroundColor;
     private SpriteObjectsMap spriteObjectsMap;
+    private Sprite characterSprite;
 
     public Land(Graphics2D land2D, BufferedImage image, Color backGroundColor, int width, int height) {
         this.land2D = land2D;
@@ -32,8 +34,27 @@ public class Land implements Model {
     }
 
     public void addSprite(Sprite sprite, int x, int y) {
-        spriteObjectsMap.addSprite(sprite.getImage(), x, y);
+        if (sprite.getEntityModel().equals(EntityModel.CHARACTER)) {
+            characterSprite = sprite;
+            characterSprite.addCoordinates(x, y);
+            Logger.printLog("woodcutter is on the map. x: " + characterSprite.getX() + " y: " + characterSprite.getY());
+        } else {
+            spriteObjectsMap.addSprite(sprite.getImage(), x, y);
+        }
     }
+
+    public Sprite getSprite(EntityModel entityModel) {
+        if (entityModel.equals(EntityModel.CHARACTER)) {
+            return characterSprite;
+        }
+        for(Sprite sprite : spriteObjectsMap.getSpritesMap()) {
+            if (sprite.getEntityModel().equals(entityModel)) {
+                return sprite;
+            }
+        }
+        return null;
+    }
+
 
     public void removeSprite(Sprite sprite) {
         spriteObjectsMap.removeSprite(sprite);

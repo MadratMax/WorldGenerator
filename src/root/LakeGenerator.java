@@ -4,12 +4,12 @@ import java.util.ArrayList;
 
 public class LakeGenerator implements Generator {
 
-    private final Model land;
+    private final ILandModel land;
     private final Multiplicator multiplicator;
     private Sprite lake;
     private final Randomizator random;
 
-    public LakeGenerator(Multiplicator multiplicator, Model land) {
+    public LakeGenerator(Multiplicator multiplicator, ILandModel land) {
         this.land = land;
         this.multiplicator = multiplicator;
         random = new Randomizator();
@@ -62,7 +62,7 @@ public class LakeGenerator implements Generator {
         return this;
     }
 
-    public Model getLand() {
+    public ILandModel getLand() {
         return land;
     }
 

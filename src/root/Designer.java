@@ -1,17 +1,15 @@
 package root;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 public class Designer {
 
-    private Model landModel;
+    private ILandModel landModel;
     private Scanner scanner;
     private Multiplicator multiplicator;
 
-    public Designer(Model landModel, Scanner scanner, Multiplicator multiplicator) {
+    public Designer(ILandModel landModel, Scanner scanner, Multiplicator multiplicator) {
         this.landModel = landModel;
         this.scanner = scanner;
         this.multiplicator = multiplicator;
@@ -54,25 +52,32 @@ public class Designer {
         return landArea;
     }
 
-    public LandArea cutATree(LandArea landArea, int x, int y) {
-
+    public int cutATree(LandArea landArea, int x, int y) {
         for (Sprite sprite : landArea.trees()) {
             if (sprite.getX() == x && sprite.getY() == y) {
                 multiplicator.drawStump(sprite);
                 Logger.printLog("a tree was cut (x: " + sprite.getX() + " y: " + sprite.getY());
+                ImageMaker.showWorldWithWoodcutter(landModel, multiplicator, false);
+                return 1;
             }
         }
 
-        return landArea;
+        return 0;
     }
 
-    public LandArea cutTrees(LandArea landArea) {
+    public int cutTrees(LandArea landArea) {
+        int counter = 0;
         for (Sprite sprite : landArea.trees()) {
-            multiplicator.drawStump(sprite);
-            Logger.printLog("a tree was cut (x: " + sprite.getX() + " y: " + sprite.getY());
+            if (sprite.getEntityModel().equals(EntityModel.TREE)) {
+                multiplicator.drawStump(sprite);
+                //Logger.printLog("a tree was cut (x: " + sprite.getX() + " y: " + sprite.getY());
+                counter++;
+            }
+
         }
 
-        return landArea;
+
+        return counter;
     }
 
     public void addLake(LandArea landArea) {

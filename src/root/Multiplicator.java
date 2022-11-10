@@ -1,15 +1,15 @@
 package root;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 
 public class Multiplicator {
 
     private final Randomizator random;
-    private final Model landModel;
+    private final ILandModel landModel;
     private final Color backGroundColor;
     private Graphics2D world2D;
     private Sprite lastSprite;
@@ -17,7 +17,7 @@ public class Multiplicator {
     private int lastStartY;
     private int lastCount;
 
-    public Multiplicator(Model model) {
+    public Multiplicator(ILandModel model) {
         this.landModel = model;
         this.world2D = model.getModel();
         random = new Randomizator();
@@ -183,18 +183,22 @@ public class Multiplicator {
     }
 
     private void draw(Sprite sprite, int x, int y) {
-
         if (x >= landModel.getWidth())
             x = random.getRandomFrom(landModel.getWidth());
         if (y >= landModel.getHeight())
             y = random.getRandomFrom(landModel.getHeight());
-        x = Math.abs(x);
-        y = Math.abs(y);
+        //x = Math.abs(x);
+        //y = Math.abs(y);
+
+        if (x < 0 || y < 0) {
+            return;
+        }
 
         world2D.drawImage(sprite.getImage(), x, y, null);
         landModel.addSprite(sprite, x, y);
         if (sprite.getEntityModel().equals(EntityModel.TREE)) {
             Counter.trees++;
+            //Logger.printLog("tree added.  x: " + x + " y: " + y);
         }
         if (sprite.getEntityModel().equals(EntityModel.LAKE)) {
             Counter.lakes++;
@@ -270,6 +274,36 @@ public class Multiplicator {
         world2D.drawLine(x1, y1, x2, y2);
     }
 
+    public BufferedImage drawArea(ILandModel landModel, LandArea landArea, Sprite sprite) {
+
+        if (sprite.getImage() == null) {
+            return null;
+        }
+
+        BufferedImage tempImg0 = deepCopy(landModel.getImage());
+        Graphics2D tempGraphics = tempImg0.createGraphics();
+
+        BufferedImage tempImg = tempImg0.getSubimage(landArea.StartX(), landArea.StartY(), landArea.Width(), landArea.Height());
+
+        tempGraphics.drawImage(sprite.getImage(), sprite.getX(), sprite.getY(), null);
+
+        return tempImg;
+    }
+
+    public BufferedImage drawWorldWithWoodcutter(ILandModel landModel, Sprite sprite) {
+
+        if (sprite.getImage() == null) {
+            return null;
+        }
+
+        BufferedImage tempImg0 = deepCopy(landModel.getImage());
+        Graphics2D tempGraphics = tempImg0.createGraphics();
+
+        tempGraphics.drawImage(sprite.getImage(), sprite.getX(), sprite.getY(), null);
+
+        return tempImg0;
+    }
+
     private Sprite flip(Sprite sprite) {
         BufferedImage bi = new BufferedImage(sprite.getImage().getWidth(),sprite.getImage().getHeight(),BufferedImage.TYPE_INT_ARGB);
         for(int xx = sprite.getImage().getWidth()-1;xx>0;xx--){
@@ -279,5 +313,12 @@ public class Multiplicator {
         }
         Sprite newSp = new Sprite(sprite.getEntityModel(), bi);
         return newSp;
+    }
+
+    private BufferedImage deepCopy(BufferedImage bi) {
+        ColorModel cm = bi.getColorModel();
+        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        WritableRaster raster = bi.copyData(null);
+        return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
     }
 }

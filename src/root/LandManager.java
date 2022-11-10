@@ -15,7 +15,7 @@ public class LandManager {
 
     }
 
-    public Generator createForestGenerator(Model land) {
+    public Generator createForestGenerator(ILandModel land) {
         if (land != null) {
             this.multiplicator = new Multiplicator(land);
             return new ForestGenerator(multiplicator, land);
@@ -25,7 +25,7 @@ public class LandManager {
         return null;
     }
 
-    public Generator createLakeGenerator(Model land) {
+    public Generator createLakeGenerator(ILandModel land) {
         if (land != null) {
             this.multiplicator = new Multiplicator(land);
             return new LakeGenerator(multiplicator, land);
@@ -44,7 +44,7 @@ public class LandManager {
         return null;
     }
 
-    public Designer designer(Model landModel) {
+    public Designer designer(ILandModel landModel) {
         if (designer == null) {
             designer = new Designer(landModel, scanner(landModel), multiplicator);
         }
@@ -52,7 +52,7 @@ public class LandManager {
         return designer;
     }
 
-    public Scanner scanner(Model landModel) {
+    public Scanner scanner(ILandModel landModel) {
         if (scanner == null) {
             maxBlocks = 200;
             LandSplitter splitter = new LandSplitter(landModel, maxBlocks);

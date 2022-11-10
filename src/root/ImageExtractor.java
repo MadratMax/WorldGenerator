@@ -17,37 +17,31 @@ public class ImageExtractor {
         this.backgroundColor = backColor;
     }
 
-    public ImageExtractor importImage(EntityModel entityModel) {
-        String spriteFilePath = null;
-        switch (entityModel) {
-            case LAKE -> spriteFilePath = "./data/img/lakes/lake-1.png";
-            case TREE -> spriteFilePath = "./data/img/trees/tree-1.png";
-        }
-
-        File spriteFile = new File(spriteFilePath);
-
-        if (spriteFile.exists()) {
-            sprite = processSprite(spriteFile, entityModel);
-        } else {
-            System.out.println("no sprites found in " + spriteFilePath);
-        }
-
-        return this;
-    }
-
     public ImageExtractor importImages(EntityModel entityModel) {
         String spritesPath = null;
         switch (entityModel) {
             case LAKE -> spritesPath = "./data/img/lakes/";
             case TREE -> spritesPath = "./data/img/trees/";
+            case CHARACTER -> spritesPath = "./data/img/character/";
         }
 
         File spriteFileDir = new File(spritesPath);
+
+        if (!spriteFileDir.exists()){
+            Logger.printLog("no images found in " + spritesPath);
+            return this;
+        }
+
         sprites = new ArrayList<>();
 
         for (final File fileEntry : spriteFileDir.listFiles()) {
             if (!fileEntry.isDirectory()) {
                 sprites.add(processSprite(fileEntry, entityModel));
+
+                // only one character is allowed
+                if (entityModel.equals(EntityModel.CHARACTER)) {
+                    return this;
+                }
             }
         }
 
@@ -67,7 +61,7 @@ public class ImageExtractor {
 
     public Sprite getSprite() {
         //normalize(sprite.getImage());
-        return sprite;
+        return sprites.get(0);
     }
 
     public ArrayList<Sprite> getSprites() {

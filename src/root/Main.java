@@ -7,7 +7,7 @@ public class Main {
 
     public static void main(String[] args) {
         ImageMaker.clear();
-        generateForest( 10, 5);
+        generateForest( 10, 3);
         //generateForest( 800, 100);
         //generateForest( 20, 10);
         //generateForest( 20, 5);
@@ -18,16 +18,21 @@ public class Main {
         Color backGroundColor = new Color(229, 213, 166, 255);
 
         LandManager landManager = new LandManager();
+        ImageExtractor extractor = new ImageExtractor(backGroundColor);
 
-        Generator landGenerator = landManager.createLandGenerator(backGroundColor,2000,1400);
-        Model land = landGenerator.generate(new Sprite(null, null),0,0).getLand();
+
+        // lets create a woodcutter
+        Sprite woodcutterSprite = extractor.importImages(EntityModel.CHARACTER).getSprite();
+
+
+        Generator landGenerator = landManager.createLandGenerator(backGroundColor,600,480);
+        ILandModel land = landGenerator.generate(woodcutterSprite,0,0).getLand();
+        Woodcutter woodcutter = new Woodcutter(landManager, land, woodcutterSprite);
 
         landManager.scanner(land);
 
         Generator forestGenerator = landManager.createForestGenerator(land);
         Generator lakeGenerator = landManager.createLakeGenerator(land);
-
-        ImageExtractor extractor = new ImageExtractor(backGroundColor);
 
         ArrayList<Sprite> lakes = extractor.importImages(EntityModel.LAKE).getSprites();
         ArrayList<Sprite> treeSprites = extractor.importImages(EntityModel.TREE).getSprites();
@@ -47,14 +52,37 @@ public class Main {
 
         //int treesInArea = landManager.scanner(land).countTrees(3);
         //System.out.println("found trees: " + treesInArea);
-        //landManager.multiplicator().drawFrame(scanner.getLandArea(1));
-        landManager.scanner(land).scan();
+
+
+        // here we tell the scanner to enable woodcutter search
+        //landManager.scanner(land).setScanObject(EntityModel.CHARACTER);
+        // start scan
+        //landManager.scanner(land).scan();
+
+
+
+        Thread wcStart = new Thread(startWoodcutter(woodcutter));
+        wcStart.start();
+
+
+        printStat();
         //LandArea landArea = landManager.getLandArea(20);
 
-        ImageMaker.save(land.getImage(), "forest: " + Counter.trees + "|dispersion-" + dispersion + "|density-" + density, false);
+        //ImageMaker.save(land.getImage(), "forest: " + Counter.trees + "|dispersion-" + dispersion + "|density-" + density, false);
 
-        for (LandArea landArea : landManager.getLandBlocks()) {
-            landManager.designer(land).cutTrees(landArea);
+
+        // lets cut trees in each land area
+        //int counter = 0;
+        //for (LandArea landArea : landManager.getLandBlocks()) {
+        //    counter = counter + landManager.designer(land).cutTrees(landArea);
+        //}
+
+        //Logger.printLog("trees cut: " + counter);
+
+        landManager.scanner(land).scanWoodcutter();
+        if (landManager.scanner(land).woodcutterFound()) {
+            ImageMaker.showArea(land, landManager.getLandArea(landManager.scanner(land).woodcutterLandIndex()), landManager.multiplicator());
+            landManager.multiplicator().drawFrame(landManager.scanner(land).getLandArea(landManager.scanner(land).woodcutterLandIndex()));
         }
 
 
@@ -72,6 +100,17 @@ public class Main {
     }
 
     private static void printStat() {
-        System.out.println("trees: " + Counter.trees);
+        System.out.println("\ntrees: " + Counter.trees);
+    }
+
+    private static String startWoodcutter(ICharacter character) {
+        while (true) {
+            character.move();
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

@@ -32,11 +32,19 @@ public class Logger {
                 .append(String.format(" %d/%d", current, total, etaHms));
 
         System.out.print(string);
-
-
     }
 
     public static void addLine() {
         System.out.println("/n");
+    }
+
+    public static void woodcutterProgress(int x, int y, int treesCut) {
+        StringBuilder string = new StringBuilder(140);
+        string
+                .append('\r')
+                .append("[trees cut " + treesCut + "]")
+                .append(String.format(" %d/%d", x, y));
+
+        System.out.print(string);
     }
 }

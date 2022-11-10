@@ -8,19 +8,21 @@ public class LandGenerator implements Generator {
 
     private final int width;
     private final int height;
+    private final Randomizator random;
     private Color backGroundColor;
-    private Model landModel;
+    private ILandModel landModel;
 
     public LandGenerator(Color groundColor, int width, int height) {
         this.width = width;
         this.height = height;
         this.backGroundColor = groundColor;
+        this.random = new Randomizator();
     }
 
     private BufferedImage bi;
     private Graphics2D land;
 
-    public Model getLand() {
+    public ILandModel getLand() {
         return landModel;
     }
 
@@ -30,7 +32,7 @@ public class LandGenerator implements Generator {
         Counter.dispose();
     }
 
-    public Generator generate(Sprite sprite, int count, int density) {
+    public Generator generate(Sprite characterSprite, int count, int density) {
         bi = new BufferedImage(width, height,
                 BufferedImage.TYPE_INT_RGB);
 
@@ -57,6 +59,13 @@ public class LandGenerator implements Generator {
 
         land = g2d;
         landModel = new Land(land, bi, backGroundColor, width, height);
+
+        if (characterSprite != null) {
+            int x = random.getRandomFromRange(0, landModel.getWidth());
+            int y = random.getRandomFromRange(0, landModel.getHeight());
+            landModel.addSprite(characterSprite, x, y);
+        }
+
         return this;
     }
 

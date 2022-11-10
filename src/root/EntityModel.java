@@ -10,4 +10,5 @@ public enum EntityModel {
     LAND,
     COMMON_OBJ,
     FRAME,
+    CHARACTER,
 }

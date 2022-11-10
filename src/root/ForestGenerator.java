@@ -1,16 +1,15 @@
 package root;
 
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class ForestGenerator implements Generator {
 
-    private final Model land;
+    private final ILandModel land;
     private final Multiplicator multiplicator;
     private Sprite tree;
     private final Randomizator random;
 
-    public ForestGenerator(Multiplicator multiplicator, Model land) {
+    public ForestGenerator(Multiplicator multiplicator, ILandModel land) {
         this.land = land;
         this.multiplicator = multiplicator;
         random = new Randomizator();
@@ -67,7 +66,7 @@ public class ForestGenerator implements Generator {
         return this;
     }
 
-    public Model getLand() {
+    public ILandModel getLand() {
         return land;
     }
 
