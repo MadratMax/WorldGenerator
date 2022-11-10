@@ -11,6 +11,12 @@ import java.util.Date;
 
 public class ImageMaker {
 
+    static UI ui;
+
+    public static void setUI(UI mainUi) {
+        ui = mainUi;
+    }
+
     public static void save(BufferedImage image, boolean removeOld) {
         try {
             String fileSuffix = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -96,7 +102,7 @@ public class ImageMaker {
         }
     }
 
-    public static void showWorldWithWoodcutter(ILandModel landModel, Multiplicator multiplicator, boolean removeOld) {
+    public static void saveWorldWithWoodcutter(ILandModel landModel, Multiplicator multiplicator, boolean removeOld) {
         Sprite character = landModel.getSprite(EntityModel.CHARACTER);
         BufferedImage img = multiplicator.drawWorldWithWoodcutter(landModel, character);
         String fileSuffix = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -121,6 +127,27 @@ public class ImageMaker {
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+    }
+
+    public static String showWorldWithWoodcutter(ILandModel landModel, Multiplicator multiplicator) {
+        Sprite character = landModel.getSprite(EntityModel.CHARACTER);
+        BufferedImage img = multiplicator.drawWorldWithWoodcutter(landModel, character);
+
+        ui.display(img);
+
+        return "";
+    }
+
+    public static void showAreaWithWoodcutter(ILandModel landModel, LandArea landArea, Multiplicator multiplicator) {
+        Sprite character = landModel.getSprite(EntityModel.CHARACTER);
+        boolean characterIsHere = character != null &&
+                character.getLocation() == landArea.getIndex();
+
+        if (characterIsHere) {
+            BufferedImage img = multiplicator.drawArea(landModel, landArea, character);
+
+            ui.display(img);
         }
     }
 

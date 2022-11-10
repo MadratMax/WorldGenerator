@@ -7,7 +7,7 @@ public class Main {
 
     public static void main(String[] args) {
         ImageMaker.clear();
-        generateForest( 10, 3);
+        generateForest( 10, 60);
         //generateForest( 800, 100);
         //generateForest( 20, 10);
         //generateForest( 20, 5);
@@ -60,8 +60,9 @@ public class Main {
         //landManager.scanner(land).scan();
 
 
-
-        Thread wcStart = new Thread(startWoodcutter(woodcutter));
+        UI ui = new UI(land);
+        ImageMaker.setUI(ui);
+        Thread wcStart = new Thread(startWoodcutter(land, landManager, woodcutter));
         wcStart.start();
 
 
@@ -80,21 +81,25 @@ public class Main {
         //Logger.printLog("trees cut: " + counter);
 
         landManager.scanner(land).scanWoodcutter();
-        if (landManager.scanner(land).woodcutterFound()) {
-            ImageMaker.showArea(land, landManager.getLandArea(landManager.scanner(land).woodcutterLandIndex()), landManager.multiplicator());
-            landManager.multiplicator().drawFrame(landManager.scanner(land).getLandArea(landManager.scanner(land).woodcutterLandIndex()));
-        }
+        //if (landManager.scanner(land).woodcutterFound()) {
+        //    ImageMaker.showArea(land, landManager.getLandArea(landManager.scanner(land).woodcutterLandIndex()), landManager.multiplicator());
+        //    landManager.multiplicator().drawFrame(landManager.scanner(land).getLandArea(landManager.scanner(land).woodcutterLandIndex()));
+        //}
 
 
+        //ui.display(land.getImage());
         //landManager.multiplicator().drawFrame(landArea);
         //landManager.scanner(land).scan(20);
         //landManager.scanner(land).getData();
 
-        ImageMaker.save(land.getImage(), "forest: " + Counter.trees + "|dispersion-" + dispersion + "|density-" + density, false);
+        //ImageMaker.save(land.getImage(), "forest: " + Counter.trees + "|dispersion-" + dispersion + "|density-" + density, false);
         //ImageMaker.save(land, landManager.getLandArea(20), "area_0", false);
 
         printStat();
         landGenerator.dispose();
+
+
+
 
 
     }
@@ -103,14 +108,21 @@ public class Main {
         System.out.println("\ntrees: " + Counter.trees);
     }
 
-    private static String startWoodcutter(ICharacter character) {
+    private static String startWoodcutter(ILandModel landModel, LandManager landManager, ICharacter character) {
         while (true) {
             character.move();
-            try {
+            //int currentPossition = landManager.scanner(landModel).woodcutterLandIndex();
+            //if (currentPossition >= 0) {
+                //LandArea area = landManager.scanner(landModel).getLandArea(currentPossition);
+                //ImageMaker.showAreaWithWoodcutter(landModel, area , landManager.multiplicator());
+                ImageMaker.showWorldWithWoodcutter(landModel, landManager.multiplicator());
+            //}
+
+            /*try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
     }
 }

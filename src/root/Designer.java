@@ -57,7 +57,9 @@ public class Designer {
             if (sprite.getX() == x && sprite.getY() == y) {
                 multiplicator.drawStump(sprite);
                 Logger.printLog("a tree was cut (x: " + sprite.getX() + " y: " + sprite.getY());
-                ImageMaker.showWorldWithWoodcutter(landModel, multiplicator, false);
+                //Thread t1 = new Thread(ImageMaker.showWorldWithWoodcutter(landModel, multiplicator));
+                //t1.start();
+
                 return 1;
             }
         }
